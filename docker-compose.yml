@@ -1,0 +1,32 @@
+version: '3'
+
+volumes:
+  data:
+
+services:
+  web:
+    build: .
+    ports:
+      - '3000:3000'
+    tty: true
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.0
+    healthcheck:
+      test: mysqlshow -u $$MYSQL_USER -p$$MYSQL_PASSWORD
+      interval: 3s
+      retries: 10
+    ports:
+      - '3306:3306'
+    tty: true
+    platform: linux/x86_64
+    volumes:
+      - data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpw
+      MYSQL_DATABASE: sample_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: passw0rd
