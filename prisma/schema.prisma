@@ -7,18 +7,62 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ユーザーテーブル
 model User {
   id    Int     @default(autoincrement()) @id
-  email String  @unique
-  name  String?
-  posts Post[]
+  name String
+  email String
+  moneyDiary MoneyDiary[]
 }
 
-model Post {
-  id        Int      @default(autoincrement()) @id
-  title     String
-  content   String?
-  published Boolean? @default(false)
-  author    User?    @relation(fields: [authorId], references: [id])
-  authorId  Int?
+// 家計簿テーブル
+model MoneyDiary {
+  id    Int     @default(autoincrement()) @id
+  // メモ
+  memo  String
+  // 出金額
+  withdrawal  Int
+  // 支払い額
+  payment  Int
+  // 日付
+  date  DateTime
+  // カテゴリー
+  category String
+  // 周期
+  period Int
+  // ユーザーID
+  user User @relation(fields: [userId],references: [id])
+  userId Int
+  // 費目ID
+  expenseItem ExpenseItem @relation(fields: [expenseItemId],references: [id])
+  expenseItemId Int
+  // カテゴリー
+  categories MoneyDiary_Category[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+}
+
+// 費目テーブル
+model ExpenseItem {
+  id    Int   @default(autoincrement()) @id
+  name String
+  moneyDiary MoneyDiary[]
+}
+
+// カテゴリーテーブル
+model Category {
+  id   Int   @default(autoincrement()) @id
+  name String
+  // 
+  moneyDiarys MoneyDiary_Category[]
+}
+
+// 家計簿-カテゴリー中間テーブル
+model MoneyDiary_Category{
+  moneyDiary MoneyDiary @relation(fields: [moneyDiaryId],references: [id])
+  moneyDiaryId Int
+  category Category @relation(fields: [categoryId],references: [id])
+  categoryId Int
+  
+  @@id([moneyDiaryId,categoryId])
 }
