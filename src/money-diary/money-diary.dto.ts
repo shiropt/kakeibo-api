@@ -3,6 +3,7 @@ import { MoneyDiary } from '@prisma/client';
 type MoneyDiaryWithCategories = MoneyDiary & {
   categories: {
     category: {
+      id: number;
       name: string;
     };
   }[];
@@ -16,7 +17,7 @@ export class MoneyDiaryDto implements Omit<MoneyDiary, 'userId'> {
     this.date = moneyDiary.date;
     this.period = moneyDiary.period;
     this.expenseItemName = moneyDiary.expenseItemName;
-    this.categories = moneyDiary.categories.map((obj) => obj.category.name);
+    this.categories = moneyDiary.categories.map((obj) => obj.category);
     this.createdAt = moneyDiary.createdAt;
     this.updatedAt = moneyDiary.updatedAt;
   }
@@ -27,7 +28,7 @@ export class MoneyDiaryDto implements Omit<MoneyDiary, 'userId'> {
   date: Date;
   period: number;
   expenseItemName: string;
-  categories: string[];
+  categories: { id: number; name: string }[];
   createdAt: Date;
   updatedAt: Date;
 }
