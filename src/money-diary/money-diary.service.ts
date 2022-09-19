@@ -6,29 +6,43 @@ import { Injectable } from '@nestjs/common';
 export class MoneyDiaryService {
   constructor(private prisma: PrismaService) {}
 
+  //** 家計簿全件取得 */
   async getMoneyDiaries(userId: number): Promise<MoneyDiaryDto[]> {
     const moneyDiaries = await this.prisma.moneyDiary.findMany({
       where: { userId },
       include: {
         categories: { select: { category: { select: { name: true } } } },
       },
+      orderBy: { date: 'asc' },
     });
+    const moneyDiaryDto = moneyDiaries.map(
+      (moneyDiary) => new MoneyDiaryDto(moneyDiary),
+    );
+    return moneyDiaryDto;
+  }
 
-    const moneyDiaryDto = moneyDiaries.map((moneyDiary) => {
-      return new MoneyDiaryDto(
-        moneyDiary.id,
-        moneyDiary.memo,
-        moneyDiary.withdrawal,
-        moneyDiary.payment,
-        moneyDiary.date,
-        moneyDiary.period,
-        moneyDiary.expenseItemName,
-        moneyDiary.categories.map((obj) => obj.category.name),
-        moneyDiary.createdAt,
-        moneyDiary.updatedAt,
-      );
+  /** 該当年の家計簿取得 */
+  async getMoneyDiariesByYear(
+    userId: number,
+    year: string,
+  ): Promise<MoneyDiaryDto[]> {
+    const nextYear = String(Number(year) + 1);
+    const moneyDiaries = await this.prisma.moneyDiary.findMany({
+      where: {
+        userId,
+        date: {
+          gt: new Date(year),
+          lt: new Date(nextYear),
+        },
+      },
+      include: {
+        categories: { select: { category: { select: { name: true } } } },
+      },
+      orderBy: { date: 'asc' },
     });
-
+    const moneyDiaryDto = moneyDiaries.map(
+      (moneyDiary) => new MoneyDiaryDto(moneyDiary),
+    );
     return moneyDiaryDto;
   }
 }
