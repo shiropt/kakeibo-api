@@ -706,17 +706,17 @@
     consola "^2.15.0"
     node-fetch "^2.6.1"
 
-"@prisma/client@^3.11.1":
-  version "3.11.1"
-  resolved "https://registry.npmjs.org/@prisma/client/-/client-3.11.1.tgz"
-  integrity sha512-B3C7zQG4HbjJzUr2Zg9UVkBJutbqq9/uqkl1S138+keZCubJrwizx3RuIvGwI+s+pm3qbsyNqXiZgL3Ir0fSng==
+"@prisma/client@^4.3.1":
+  version "4.3.1"
+  resolved "https://registry.yarnpkg.com/@prisma/client/-/client-4.3.1.tgz#b9aad9bd9bd43e7f715ec1d763c8bd9273688800"
+  integrity sha512-FA0/d1VMJNWqzU7WVWTNWJ+lGOLR9JUBnF73GdIPAEVo/6dWk4gHx0EmgeU+SMv4MZoxgOeTBJF2azhg7x0hMw==
   dependencies:
-    "@prisma/engines-version" "3.11.1-1.1a2506facaf1a4727b7c26850735e88ec779dee9"
+    "@prisma/engines-version" "4.3.0-32.c875e43600dfe042452e0b868f7a48b817b9640b"
 
-"@prisma/engines-version@3.11.1-1.1a2506facaf1a4727b7c26850735e88ec779dee9":
-  version "3.11.1-1.1a2506facaf1a4727b7c26850735e88ec779dee9"
-  resolved "https://registry.npmjs.org/@prisma/engines-version/-/engines-version-3.11.1-1.1a2506facaf1a4727b7c26850735e88ec779dee9.tgz"
-  integrity sha512-HkcsDniA4iNb/gi0iuyOJNAM7nD/LwQ0uJm15v360O5dee3TM4lWdSQiTYBMK6FF68ACUItmzSur7oYuUZ2zkQ==
+"@prisma/engines-version@4.3.0-32.c875e43600dfe042452e0b868f7a48b817b9640b":
+  version "4.3.0-32.c875e43600dfe042452e0b868f7a48b817b9640b"
+  resolved "https://registry.yarnpkg.com/@prisma/engines-version/-/engines-version-4.3.0-32.c875e43600dfe042452e0b868f7a48b817b9640b.tgz#a564dd6fb6f25405fe06164989ebd8a1e4bb3508"
+  integrity sha512-8yWpXkQRmiSfsi2Wb/ZS5D3RFbeu/btL9Pm/gdF4phB0Lo5KGsDFMxFMgaD64mwED2nHc8ZaEJg/+4Jymb9Znw==
 
 "@prisma/engines@3.11.1-1.1a2506facaf1a4727b7c26850735e88ec779dee9":
   version "3.11.1-1.1a2506facaf1a4727b7c26850735e88ec779dee9"
