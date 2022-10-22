@@ -1,5 +1,7 @@
-import { MoneyDiary } from '@prisma/client';
-import { MoneyDiaryDto } from './money-diary.dto';
+import { MoneyDiaryDto } from './dto/money-diary.create-dto';
+import { MoneyDiaryGetResponse } from './response/money-diary';
+// import { MoneyDiary } from '@prisma/client';
+import { ApiOkResponse } from '@nestjs/swagger';
 import { MoneyDiaryService } from './money-diary.service';
 import {
   Body,
@@ -12,29 +14,38 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-
+import { MoneyDiary } from './entities/money-diary.entity';
 @Controller('api/v1/money-diary')
 export class MoneyDiaryController {
   constructor(private readonly moneyDiaryService: MoneyDiaryService) {}
 
   //** 家計簿全件取得 */
   @Get()
+  @ApiOkResponse({ type: MoneyDiaryGetResponse, isArray: true })
   private async getMoneyDiary(
     @Headers('userId') userId: string,
-  ): Promise<MoneyDiaryDto[]> {
-    return this.moneyDiaryService.getMoneyDiaries(parseInt(userId, 10));
+  ): Promise<MoneyDiaryGetResponse[]> {
+    return this.moneyDiaryService.getMoneyDiaries(+userId);
   }
 
   /** 該当年の家計簿取得 */
-  @Get('/query')
+  @Get('search')
+  @ApiOkResponse({ type: MoneyDiaryGetResponse, isArray: true })
   private async getMoneyDiaryByYear(
     @Query('year') year: string,
+    @Query('month') month: string,
     @Headers('userId') userId: string,
-  ): Promise<MoneyDiaryDto[]> {
-    return this.moneyDiaryService.getMoneyDiariesByYear(
-      parseInt(userId, 10),
-      year,
-    );
+  ): Promise<MoneyDiaryGetResponse[]> {
+    return this.moneyDiaryService.getMoneyDiariesByYear(+userId, year, month);
+  }
+  /** 該当月の家計簿取得 */
+  @Get('month')
+  @ApiOkResponse({ type: MoneyDiaryGetResponse, isArray: true })
+  private async getMoneyDiaryByMonth(
+    @Query('month') month: string,
+    @Headers('userId') userId: string,
+  ): Promise<MoneyDiaryGetResponse[]> {
+    return this.moneyDiaryService.getMoneyDiariesByMonth(+userId, month);
   }
 
   /** 家計簿登録 */
@@ -43,26 +54,21 @@ export class MoneyDiaryController {
     @Headers('userId') userId: string,
     @Body() moneyDiary: MoneyDiaryDto,
   ): Promise<MoneyDiary> {
-    return this.moneyDiaryService.createMoneyDiary(
-      parseInt(userId, 10),
-      moneyDiary,
-    );
+    return this.moneyDiaryService.createMoneyDiary(+userId, moneyDiary);
   }
 
   /** 家計簿更新 */
   @Put()
   private async updateMoneyDiary(
     @Headers('userId') userId: string,
+    @Param('id') id: string,
     @Body() moneyDiary: MoneyDiaryDto,
   ): Promise<MoneyDiary> {
-    return this.moneyDiaryService.updateMoneyDiary(
-      parseInt(userId, 10),
-      moneyDiary,
-    );
+    return this.moneyDiaryService.updateMoneyDiary(+userId, +id, moneyDiary);
   }
 
   @Delete(':id')
   private async deleteMoneyDiary(@Param('id') id: string) {
-    return this.moneyDiaryService.deleteMoneyDiary(parseInt(id, 10));
+    return this.moneyDiaryService.deleteMoneyDiary(+id);
   }
 }

@@ -1,14 +1,17 @@
 import { MoneyDiary } from '@prisma/client';
-import { MoneyDiaryDto } from './money-diary.dto';
 import { PrismaService } from '../prisma.service';
 import { Injectable } from '@nestjs/common';
+import { MoneyDiaryGetResponse } from './response/money-diary';
+import { MoneyDiaryDto } from './dto/money-diary.create-dto';
 
 @Injectable()
 export class MoneyDiaryService {
   constructor(private prisma: PrismaService) {}
 
   //** 家計簿全件取得 */
-  public async getMoneyDiaries(userId: number): Promise<MoneyDiaryDto[]> {
+  public async getMoneyDiaries(
+    userId: number,
+  ): Promise<MoneyDiaryGetResponse[]> {
     const moneyDiaries = await this.prisma.moneyDiary.findMany({
       where: { userId },
       include: {
@@ -16,26 +19,33 @@ export class MoneyDiaryService {
           select: { category: { select: { id: true, name: true } } },
         },
       },
-      orderBy: { date: 'asc' },
+      orderBy: { date: 'desc' },
     });
-    const moneyDiaryDto = moneyDiaries.map(
-      (moneyDiary) => new MoneyDiaryDto(moneyDiary),
+    const moneyDiaryGetResponse = moneyDiaries.map(
+      (moneyDiary) => new MoneyDiaryGetResponse(moneyDiary),
     );
-    return moneyDiaryDto;
+    return moneyDiaryGetResponse;
   }
 
   /** 該当年の家計簿取得 */
   public async getMoneyDiariesByYear(
     userId: number,
-    year: string,
-  ): Promise<MoneyDiaryDto[]> {
-    const nextYear = String(Number(year) + 1);
+    year: string | number,
+    month?: string,
+  ): Promise<MoneyDiaryGetResponse[]> {
+    const gt = new Date(String(year) + `/${month}`);
+    const lt = new Date(gt.getTime());
+    lt.setMonth(gt.getMonth() + 1);
+
+    if (!userId) {
+      return [];
+    }
     const moneyDiaries = await this.prisma.moneyDiary.findMany({
       where: {
         userId,
         date: {
-          gt: new Date(year),
-          lt: new Date(nextYear),
+          gt,
+          lt,
         },
       },
       include: {
@@ -45,10 +55,31 @@ export class MoneyDiaryService {
       },
       orderBy: { date: 'asc' },
     });
-    const moneyDiaryDto = moneyDiaries.map(
-      (moneyDiary) => new MoneyDiaryDto(moneyDiary),
+    const moneyDiaryGetResponse = moneyDiaries.map(
+      (moneyDiary) => new MoneyDiaryGetResponse(moneyDiary),
     );
-    return moneyDiaryDto;
+    return moneyDiaryGetResponse;
+  }
+
+  public async getMoneyDiariesByMonth(userId: number, month: string) {
+    const moneyDiaries = await this.prisma.moneyDiary.findMany({
+      where: {
+        userId,
+        date: {
+          gt: new Date('2022/08'),
+          lt: new Date('2022/09'),
+        },
+      },
+      include: {
+        categories: {
+          select: { category: { select: { name: true, id: true } } },
+        },
+      },
+    });
+    const moneyDiaryGetResponse = moneyDiaries.map(
+      (moneyDiary) => new MoneyDiaryGetResponse(moneyDiary),
+    );
+    return moneyDiaryGetResponse;
   }
 
   /** 家計簿登録 */
@@ -65,8 +96,9 @@ export class MoneyDiaryService {
       expenseItemName,
       categories,
     } = request;
+
     const categoryIdList = categories.map((category) => {
-      return { categoryId: category.id };
+      return { categoryId: category };
     });
     const createResult = await this.prisma.moneyDiary.create({
       data: {
@@ -88,6 +120,7 @@ export class MoneyDiaryService {
   /** 家計簿更新 */
   public async updateMoneyDiary(
     userId: number,
+    id: number,
     request: MoneyDiaryDto,
   ): Promise<MoneyDiary> {
     const {
@@ -98,10 +131,9 @@ export class MoneyDiaryService {
       period,
       expenseItemName,
       categories,
-      id,
     } = request;
     const categoryIdList = categories.map((category) => {
-      return { categoryId: category.id };
+      return { categoryId: category };
     });
     const deleteResult = this.prisma.moneyDiary_Category.deleteMany({
       where: { moneyDiaryId: id },

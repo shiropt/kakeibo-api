@@ -1,4 +1,5 @@
 import { MoneyDiary } from '@prisma/client';
+import { ApiProperty } from '@nestjs/swagger';
 
 type MoneyDiaryWithCategories = MoneyDiary & {
   categories: {
@@ -8,7 +9,7 @@ type MoneyDiaryWithCategories = MoneyDiary & {
     };
   }[];
 };
-export class MoneyDiaryDto implements Omit<MoneyDiary, 'userId'> {
+export class MoneyDiaryGetResponse implements Omit<MoneyDiary, 'userId'> {
   constructor(moneyDiary: MoneyDiaryWithCategories) {
     this.id = moneyDiary.id;
     this.memo = moneyDiary.memo;
@@ -21,14 +22,33 @@ export class MoneyDiaryDto implements Omit<MoneyDiary, 'userId'> {
     this.createdAt = moneyDiary.createdAt;
     this.updatedAt = moneyDiary.updatedAt;
   }
+  @ApiProperty()
   id: number;
+
+  @ApiProperty()
   memo: string;
+
+  @ApiProperty()
   withdrawal: number;
+
+  @ApiProperty()
   payment: number;
+
+  @ApiProperty()
   date: Date;
+
+  @ApiProperty()
   period: number;
+
+  @ApiProperty()
   expenseItemName: string;
+
+  @ApiProperty()
   categories: { id: number; name: string }[];
+
+  @ApiProperty()
   createdAt: Date;
+
+  @ApiProperty()
   updatedAt: Date;
 }
