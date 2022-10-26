@@ -26,8 +26,8 @@ model MoneyDiary {
   payment  Int
   // 日付
   date  DateTime
-  // 周期
-  period Int?
+  // 自動登録
+  automaticRegistration Boolean
   // ユーザーID
   user User @relation(fields: [userId],references: [id])
   userId Int

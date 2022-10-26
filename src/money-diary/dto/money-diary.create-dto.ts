@@ -8,6 +8,7 @@ import {
   MaxLength,
   Max,
   ValidationArguments,
+  IsBoolean,
 } from 'class-validator';
 
 export class MoneyDiaryDto
@@ -59,13 +60,8 @@ export class MoneyDiaryDto
   date: Date;
 
   @ApiProperty()
-  @IsNumber()
-  @Max(1_000_000_000, {
-    message(validationArguments: ValidationArguments) {
-      return `${validationArguments.property}は1,000,000,001以上登録できません`;
-    },
-  })
-  period: number;
+  @IsBoolean()
+  automaticRegistration: boolean;
 
   @ApiProperty()
   @IsNotEmpty({

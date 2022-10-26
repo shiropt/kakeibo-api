@@ -18,7 +18,7 @@ export class MoneyDiary implements MoneyDiaryModel {
   date: Date;
 
   @ApiProperty()
-  period: number | null;
+  automaticRegistration: boolean;
 
   @ApiProperty()
   userId: number;

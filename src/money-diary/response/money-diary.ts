@@ -16,7 +16,7 @@ export class MoneyDiaryGetResponse implements Omit<MoneyDiary, 'userId'> {
     this.withdrawal = moneyDiary.withdrawal;
     this.payment = moneyDiary.payment;
     this.date = moneyDiary.date;
-    this.period = moneyDiary.period;
+    this.automaticRegistration = moneyDiary.automaticRegistration;
     this.expenseItemName = moneyDiary.expenseItemName;
     this.categories = moneyDiary.categories.map((obj) => obj.category);
     this.createdAt = moneyDiary.createdAt;
@@ -38,7 +38,7 @@ export class MoneyDiaryGetResponse implements Omit<MoneyDiary, 'userId'> {
   date: Date;
 
   @ApiProperty()
-  period: number;
+  automaticRegistration: boolean;
 
   @ApiProperty()
   expenseItemName: string;

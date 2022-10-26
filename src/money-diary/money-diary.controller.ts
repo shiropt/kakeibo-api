@@ -58,7 +58,7 @@ export class MoneyDiaryController {
   }
 
   /** 家計簿更新 */
-  @Put()
+  @Put(':id')
   private async updateMoneyDiary(
     @Headers('userId') userId: string,
     @Param('id') id: string,

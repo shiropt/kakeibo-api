@@ -3,10 +3,57 @@ import { PrismaService } from '../prisma.service';
 import { Injectable } from '@nestjs/common';
 import { MoneyDiaryGetResponse } from './response/money-diary';
 import { MoneyDiaryDto } from './dto/money-diary.create-dto';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class MoneyDiaryService {
   constructor(private prisma: PrismaService) {}
+  @Cron('0 0 1 * *')
+  async handleCron() {
+    await this.regularCreateMoneyDiary();
+  }
+
+  //** 毎月1に定期登録を実行 */
+  public async regularCreateMoneyDiary() {
+    const date = new Date();
+    const automaticRegistrationMoneyDiaries =
+      await this.prisma.moneyDiary.findMany({
+        where: {
+          automaticRegistration: true,
+          date: {
+            gte: new Date(date.getFullYear(), date.getMonth() - 1),
+            lt: new Date(date.getFullYear(), date.getMonth()),
+          },
+        },
+        include: {
+          categories: { select: { category: { select: { id: true } } } },
+        },
+      });
+
+    automaticRegistrationMoneyDiaries.forEach(async (moneyDiary) => {
+      const nextMonth = new Date(
+        moneyDiary.date.getFullYear(),
+        moneyDiary.date.getMonth() + 1,
+        moneyDiary.date.getDate(),
+      );
+      await this.prisma.moneyDiary.create({
+        data: {
+          userId: moneyDiary.userId,
+          memo: moneyDiary.memo,
+          expenseItemName: moneyDiary.expenseItemName,
+          payment: moneyDiary.payment,
+          withdrawal: moneyDiary.withdrawal,
+          date: nextMonth,
+          categories: {
+            create: moneyDiary.categories.map((category) => {
+              return { categoryId: category.category.id };
+            }),
+          },
+          automaticRegistration: moneyDiary.automaticRegistration,
+        },
+      });
+    });
+  }
 
   //** 家計簿全件取得 */
   public async getMoneyDiaries(
@@ -92,7 +139,7 @@ export class MoneyDiaryService {
       withdrawal,
       payment,
       date,
-      period,
+      automaticRegistration,
       expenseItemName,
       categories,
     } = request;
@@ -107,7 +154,7 @@ export class MoneyDiaryService {
         withdrawal,
         payment,
         date,
-        period,
+        automaticRegistration,
         expenseItemName,
         categories: {
           create: categoryIdList,
@@ -128,7 +175,7 @@ export class MoneyDiaryService {
       withdrawal,
       payment,
       date,
-      period,
+      automaticRegistration,
       expenseItemName,
       categories,
     } = request;
@@ -146,7 +193,7 @@ export class MoneyDiaryService {
         withdrawal,
         payment,
         date,
-        period,
+        automaticRegistration,
         expenseItemName,
         categories: {
           create: categoryIdList,
