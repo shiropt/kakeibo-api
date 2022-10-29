@@ -4,6 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { MoneyDiaryGetResponse } from './response/money-diary';
 import { MoneyDiaryDto } from './dto/money-diary.create-dto';
 import { Cron } from '@nestjs/schedule';
+import { first } from 'rxjs';
 
 @Injectable()
 export class MoneyDiaryService {
@@ -79,10 +80,13 @@ export class MoneyDiaryService {
     userId: number,
     year: string | number,
     month?: string,
+    orderByIncomeAndExpenditure?: 'payment' | 'withdrawal',
+    orderByDate: 'asc' | 'desc' = 'asc',
   ): Promise<MoneyDiaryGetResponse[]> {
     const gt = new Date(String(year) + `/${month}`);
     const lt = new Date(gt.getTime());
     lt.setMonth(gt.getMonth() + 1);
+    const isPaymentSort = orderByIncomeAndExpenditure === 'payment';
 
     if (!userId) {
       return [];
@@ -100,11 +104,17 @@ export class MoneyDiaryService {
           select: { category: { select: { name: true, id: true } } },
         },
       },
-      orderBy: { date: 'asc' },
+      orderBy: !orderByIncomeAndExpenditure
+        ? [{ date: orderByDate }, { payment: 'desc' }, { withdrawal: 'asc' }]
+        : [
+            { payment: isPaymentSort ? 'desc' : 'asc' },
+            { withdrawal: isPaymentSort ? 'asc' : 'desc' },
+          ],
     });
     const moneyDiaryGetResponse = moneyDiaries.map(
       (moneyDiary) => new MoneyDiaryGetResponse(moneyDiary),
     );
+
     return moneyDiaryGetResponse;
   }
 
@@ -126,7 +136,12 @@ export class MoneyDiaryService {
     const moneyDiaryGetResponse = moneyDiaries.map(
       (moneyDiary) => new MoneyDiaryGetResponse(moneyDiary),
     );
-    return moneyDiaryGetResponse;
+    const sort = moneyDiaryGetResponse.sort(
+      (a, b) => a.incomeAndExpenditure - b.incomeAndExpenditure,
+    );
+    console.log(sort);
+
+    return sort;
   }
 
   /** 家計簿登録 */

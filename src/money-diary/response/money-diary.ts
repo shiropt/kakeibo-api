@@ -21,6 +21,7 @@ export class MoneyDiaryGetResponse implements Omit<MoneyDiary, 'userId'> {
     this.categories = moneyDiary.categories.map((obj) => obj.category);
     this.createdAt = moneyDiary.createdAt;
     this.updatedAt = moneyDiary.updatedAt;
+    this.incomeAndExpenditure = moneyDiary.withdrawal - moneyDiary.payment;
   }
   @ApiProperty()
   id: number;
@@ -33,6 +34,9 @@ export class MoneyDiaryGetResponse implements Omit<MoneyDiary, 'userId'> {
 
   @ApiProperty()
   payment: number;
+
+  @ApiProperty()
+  incomeAndExpenditure: number;
 
   @ApiProperty()
   date: Date;

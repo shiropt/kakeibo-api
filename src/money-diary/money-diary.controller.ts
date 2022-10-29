@@ -34,9 +34,19 @@ export class MoneyDiaryController {
   private async getMoneyDiaryByYear(
     @Query('year') year: string,
     @Query('month') month: string,
-    @Headers('userId') userId: string,
+    @Query('orderByDate') orderByDate: 'asc' | 'desc',
+    @Query('orderByIncomeAndExpenditure')
+    orderByIncomeAndExpenditure: 'payment' | 'withdrawal',
+    @Headers('userId')
+    userId: string,
   ): Promise<MoneyDiaryGetResponse[]> {
-    return this.moneyDiaryService.getMoneyDiariesByYear(+userId, year, month);
+    return this.moneyDiaryService.getMoneyDiariesByYear(
+      +userId,
+      year,
+      month,
+      orderByIncomeAndExpenditure,
+      orderByDate,
+    );
   }
   /** 該当月の家計簿取得 */
   @Get('month')
