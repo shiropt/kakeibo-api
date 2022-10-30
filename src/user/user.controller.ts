@@ -6,9 +6,9 @@ import { User, Prisma } from '@prisma/client';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Get(':id')
-  async getUser(@Param('id') id: string): Promise<User> {
-    return this.userService.getUser(parseInt(id, 10));
+  @Get(':email')
+  async getUser(@Param('email') email: string): Promise<User> {
+    return this.userService.getUser(email);
   }
 
   @Post()

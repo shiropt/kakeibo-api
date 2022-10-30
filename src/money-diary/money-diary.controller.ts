@@ -13,9 +13,15 @@ import {
   Post,
   Put,
   Query,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+
 import { MoneyDiary } from './entities/money-diary.entity';
+import { User } from '@prisma/client';
 @Controller('api/v1/money-diary')
+@UseGuards(AuthGuard('jwt'))
 export class MoneyDiaryController {
   constructor(private readonly moneyDiaryService: MoneyDiaryService) {}
 
@@ -37,11 +43,10 @@ export class MoneyDiaryController {
     @Query('orderByDate') orderByDate: 'asc' | 'desc',
     @Query('orderByIncomeAndExpenditure')
     orderByIncomeAndExpenditure: 'payment' | 'withdrawal',
-    @Headers('userId')
-    userId: string,
+    @Request() request: { user: Omit<User, 'password'> },
   ): Promise<MoneyDiaryGetResponse[]> {
     return this.moneyDiaryService.getMoneyDiariesByYear(
-      +userId,
+      request.user.id,
       year,
       month,
       orderByIncomeAndExpenditure,
@@ -61,20 +66,24 @@ export class MoneyDiaryController {
   /** 家計簿登録 */
   @Post()
   private async createMoneyDiary(
-    @Headers('userId') userId: string,
+    @Request() request: { user: Omit<User, 'password'> },
     @Body() moneyDiary: MoneyDiaryDto,
   ): Promise<MoneyDiary> {
-    return this.moneyDiaryService.createMoneyDiary(+userId, moneyDiary);
+    return this.moneyDiaryService.createMoneyDiary(request.user.id, moneyDiary);
   }
 
   /** 家計簿更新 */
   @Put(':id')
   private async updateMoneyDiary(
-    @Headers('userId') userId: string,
+    @Request() request: { user: Omit<User, 'password'> },
     @Param('id') id: string,
     @Body() moneyDiary: MoneyDiaryDto,
   ): Promise<MoneyDiary> {
-    return this.moneyDiaryService.updateMoneyDiary(+userId, +id, moneyDiary);
+    return this.moneyDiaryService.updateMoneyDiary(
+      request.user.id,
+      +id,
+      moneyDiary,
+    );
   }
 
   @Delete(':id')

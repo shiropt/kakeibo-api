@@ -139,7 +139,7 @@ export class MoneyDiaryService {
     const sort = moneyDiaryGetResponse.sort(
       (a, b) => a.incomeAndExpenditure - b.incomeAndExpenditure,
     );
-    console.log(sort);
+    // console.log(sort);
 
     return sort;
   }
