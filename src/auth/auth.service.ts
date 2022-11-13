@@ -11,12 +11,12 @@ export class AuthService {
   ) {}
   async validateUser(
     email: string,
-    pass: string,
-  ): Promise<Omit<User, 'password'> | null> {
+    uid: string,
+  ): Promise<Omit<User, 'uid'> | null> {
     const user = await this.userService.getUser(email);
-    if (user && user.password === pass) {
+    if (user && user.uid === uid) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password, ...result } = user;
+      const { uid, ...result } = user;
       return result;
     }
     return null;

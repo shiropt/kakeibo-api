@@ -9,10 +9,9 @@ datasource db {
 
 // ユーザーテーブル
 model User {
-  id    Int     @default(autoincrement()) @id
-  name String
+  id  Int    @default(autoincrement()) @id
+  uid String @unique 
   email String @unique
-  password String
   moneyDiary MoneyDiary[]
 }
 

@@ -16,7 +16,7 @@ export class AuthController {
   async login(
     @Body() user: UserLoginDto,
     @Request()
-    req: { user: Omit<User, 'password'> },
+    req: { user: User },
   ) {
     const result = this.authService.login(req.user);
     return result;

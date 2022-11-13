@@ -1,3 +1,4 @@
+import { UserCreateDto } from './dto/userCreateDto';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { User, Prisma } from '@prisma/client';
@@ -13,6 +14,15 @@ export class UserService {
   }
 
   async createUser(data: Prisma.UserCreateInput): Promise<User> {
+    return this.prisma.user.create({
+      data,
+    });
+  }
+  async googleSignin(data: UserCreateDto): Promise<User> {
+    const user = await this.prisma.user.findUnique({
+      where: { uid: data.uid },
+    });
+    if (user) return user;
     return this.prisma.user.create({
       data,
     });
