@@ -1,10 +1,13 @@
 import { MoneyDiary } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { Injectable } from '@nestjs/common';
-import { MoneyDiaryGetResponse } from './response/money-diary';
+import {
+  Aggregate,
+  AggregateResponse,
+  MoneyDiaryGetResponse,
+} from './response/money-diary';
 import { MoneyDiaryDto } from './dto/money-diary.create-dto';
 import { Cron } from '@nestjs/schedule';
-import { first } from 'rxjs';
 
 @Injectable()
 export class MoneyDiaryService {
@@ -76,7 +79,7 @@ export class MoneyDiaryService {
   }
 
   /** 該当年の家計簿取得 */
-  public async getMoneyDiariesByYear(
+  public async getMoneyDiariesByMonth(
     userId: number,
     year: string | number,
     month?: string,
@@ -118,30 +121,93 @@ export class MoneyDiaryService {
     return moneyDiaryGetResponse;
   }
 
-  public async getMoneyDiariesByMonth(userId: number, month: string) {
-    const moneyDiaries = await this.prisma.moneyDiary.findMany({
-      where: {
-        userId,
-        date: {
-          gt: new Date('2022/08'),
-          lt: new Date('2022/09'),
-        },
-      },
-      include: {
-        categories: {
-          select: { category: { select: { name: true, id: true } } },
-        },
-      },
-    });
-    const moneyDiaryGetResponse = moneyDiaries.map(
-      (moneyDiary) => new MoneyDiaryGetResponse(moneyDiary),
-    );
-    const sort = moneyDiaryGetResponse.sort(
-      (a, b) => a.incomeAndExpenditure - b.incomeAndExpenditure,
-    );
-    // console.log(sort);
+  /**年別の出費/入金合計を取得 */
+  public async getAggregateMoneyDiaries(
+    userId: number,
+  ): Promise<AggregateResponse> {
+    /**日付、入金、出金カラムのみの家計簿を取得 */
+    const moneyDiaries = await this.getMoneyDiaryAmounts(userId);
 
-    return sort;
+    /** 年別に集計した家計簿 */
+    const aggregateByYear = await this.groupByDate(moneyDiaries, 'year');
+
+    /** 月別に集計した家計簿 */
+    const aggregateByMonth = await this.groupByDate(moneyDiaries, 'month');
+
+    /**総合計取得 */
+    const aggregateAmount = await this.prisma.moneyDiary.aggregate({
+      _sum: {
+        withdrawal: true,
+        payment: true,
+      },
+      where: { userId },
+    });
+
+    const comprehensive = {
+      ...aggregateAmount._sum,
+      incomeAndExpenditure:
+        aggregateAmount._sum.withdrawal - aggregateAmount._sum.payment,
+    };
+
+    return {
+      aggregateByYear,
+      aggregateByMonth,
+      comprehensive,
+    };
+  }
+
+  private async getMoneyDiaryAmounts(userId: number) {
+    return await this.prisma.moneyDiary.findMany({
+      where: { userId },
+      select: {
+        date: true,
+        withdrawal: true,
+        payment: true,
+      },
+      orderBy: { date: 'asc' },
+    });
+  }
+
+  /**  年 or 月でグループ化 */
+  private async groupByDate(
+    moneyDiaries: Pick<MoneyDiary, 'date' | 'withdrawal' | 'payment'>[],
+    groupBy: 'year' | 'month',
+  ): Promise<Aggregate[]> {
+    return moneyDiaries
+      .map((moneyDiary) => {
+        return {
+          withdrawal: moneyDiary.withdrawal,
+          payment: moneyDiary.payment,
+          date:
+            groupBy === 'year'
+              ? moneyDiary.date.getFullYear().toString()
+              : `${moneyDiary.date.getFullYear()}-${
+                  moneyDiary.date.getMonth() + 1
+                }`,
+        };
+      })
+      .reduce((prev, current) => {
+        // まず該当の年度があるかを判定する
+        const element = prev.find((p) => p.date === current.date);
+        if (element) {
+          element.withDrawal += current.withdrawal; // sum
+          element.payment += current.payment; // sum
+          // 該当の年度がなければprevに今の周回のデータをプッシュする
+        } else {
+          prev.push({
+            date: current.date,
+            withDrawal: current.withdrawal,
+            payment: current.payment,
+          });
+        }
+        return prev;
+      }, [])
+      .map((moneyDiary) => {
+        return {
+          ...moneyDiary,
+          incomeAndExpenditure: moneyDiary.withDrawal - moneyDiary.payment,
+        };
+      });
   }
 
   /** 家計簿登録 */

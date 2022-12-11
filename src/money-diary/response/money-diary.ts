@@ -56,3 +56,42 @@ export class MoneyDiaryGetResponse implements Omit<MoneyDiary, 'userId'> {
   @ApiProperty()
   updatedAt: Date;
 }
+
+/** 取得後グループ化して収支計算したクラス */
+export class Aggregate {
+  @ApiProperty()
+  date: string;
+
+  @ApiProperty()
+  withdrawal: number;
+
+  @ApiProperty()
+  payment: number;
+
+  @ApiProperty()
+  incomeAndExpenditure: number;
+}
+/** 金額を総合計したクラス */
+export class Comprehensive {
+  @ApiProperty()
+  withdrawal: number;
+
+  @ApiProperty()
+  payment: number;
+
+  @ApiProperty()
+  incomeAndExpenditure: number;
+}
+
+/**家計簿全件の金額を集計したクラス */
+export class AggregateResponse {
+  /**総合計 */
+  @ApiProperty({ type: Comprehensive })
+  comprehensive: Comprehensive;
+  /** 年ごとに集計 */
+  @ApiProperty({ type: Aggregate })
+  aggregateByYear: Aggregate[];
+  /**月ごとに集計 */
+  @ApiProperty({ type: Aggregate })
+  aggregateByMonth: Aggregate[];
+}

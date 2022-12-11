@@ -1,5 +1,8 @@
 import { MoneyDiaryDto } from './dto/money-diary.create-dto';
-import { MoneyDiaryGetResponse } from './response/money-diary';
+import {
+  AggregateResponse,
+  MoneyDiaryGetResponse,
+} from './response/money-diary';
 // import { MoneyDiary } from '@prisma/client';
 import { ApiOkResponse } from '@nestjs/swagger';
 import { MoneyDiaryService } from './money-diary.service';
@@ -45,7 +48,7 @@ export class MoneyDiaryController {
     orderByIncomeAndExpenditure: 'payment' | 'withdrawal',
     @Request() request: { user: Omit<User, 'password'> },
   ): Promise<MoneyDiaryGetResponse[]> {
-    return this.moneyDiaryService.getMoneyDiariesByYear(
+    return this.moneyDiaryService.getMoneyDiariesByMonth(
       request.user.id,
       year,
       month,
@@ -61,6 +64,15 @@ export class MoneyDiaryController {
     @Headers('userId') userId: string,
   ): Promise<MoneyDiaryGetResponse[]> {
     return this.moneyDiaryService.getMoneyDiariesByMonth(+userId, month);
+  }
+
+  /**年別の出費/入金合計を取得 */
+  @Get('aggregate')
+  @ApiOkResponse({ type: AggregateResponse })
+  private async getAggregateMoneyDiaries(
+    @Request() request: { user: Omit<User, 'password'> },
+  ): Promise<AggregateResponse> {
+    return this.moneyDiaryService.getAggregateMoneyDiaries(request.user.id);
   }
 
   /** 家計簿登録 */
